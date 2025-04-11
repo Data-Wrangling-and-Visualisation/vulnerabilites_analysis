@@ -1,0 +1,142 @@
+/* Основные стили */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    color: #333;
+    margin: 0;
+    padding: 0;
+    background-color: #f5f7fa;
+}
+
+header {
+    background-color: #2c3e50;
+    color: white;
+    padding: 1rem 2rem;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+nav a {
+    color: white;
+    margin-right: 1rem;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+nav a:hover {
+    text-decoration: underline;
+}
+
+.dashboard-container {
+    padding: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.controls {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    margin-bottom: 2rem;
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.controls select, .controls input {
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+.controls button {
+    padding: 0.5rem 1rem;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s;
+}
+
+.controls button:hover {
+    background-color: #2980b9;
+}
+
+.visualizations {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.chart-container {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    height: 400px;
+}
+
+.data-table {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+}
+
+tr:hover {
+    background-color: #f5f5f5;
+}
+
+.severity-CRITICAL {
+    color: #e74c3c;
+    font-weight: bold;
+}
+
+.severity-HIGH {
+    color: #e67e22;
+    font-weight: bold;
+}
+
+.severity-MEDIUM {
+    color: #f1c40f;
+    font-weight: bold;
+}
+
+.severity-LOW {
+    color: #2ecc71;
+    font-weight: bold;
+}
+
+/* Адаптивные стили */
+@media (max-width: 768px) {
+    .visualizations {
+        grid-template-columns: 1fr;
+    }
+    
+    .controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
