@@ -1,1 +1,0 @@
-# vulnerabilites_analysis
