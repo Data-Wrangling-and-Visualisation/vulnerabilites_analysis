@@ -1,30 +1,25 @@
+from flask import Flask, render_template
 import os
-from flask import Flask
-from dotenv import load_dotenv
+from backend.api import api_blueprint
 
-# Инициализация
-load_dotenv()
+# Указываем правильный путь к шаблонам
 app = Flask(__name__, 
-           static_folder='frontend/static',
-           template_folder='frontend/templates')
+            template_folder='frontend/templates',
+            static_folder='frontend/static')
 
-# Конфигурация
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
+# Конфигурация приложения
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-# Инициализация DB
-from flask_sqlalchemy import SQLAlchemy
-db = SQLAlchemy(app)
-
-# Импорт моделей и роутов
-from backend.models.vulnerabilities import Vulnerability
-from backend.api.routes import init_api
-
-init_api(app)  # Инициализация API
+# Регистрация blueprint
+app.register_blueprint(api_blueprint, url_prefix='/api')
 
 @app.route('/')
 def index():
     return render_template('index.html')
 
 if __name__ == '__main__':
+    # Проверка пути к шаблонам перед запуском
+    print(f"Template folder path: {app.template_folder}")
+    print(f"Files in template folder: {os.listdir(app.template_folder)}")
     app.run(debug=True)

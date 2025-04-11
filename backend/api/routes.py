@@ -1,7 +1,7 @@
 from flask import jsonify, request
 from .data_fetcher import NVDDataFetcher
 from backend.models.vulnerabilities import Vulnerability
-from backend.api import api_blueprint
+from backend.api import api_blueprint  # Измененный импорт
 
 @api_blueprint.route('/vulnerabilities')
 def get_vulnerabilities():

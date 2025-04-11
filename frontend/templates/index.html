@@ -1,42 +1,17 @@
-{% extends "base.html" %}
-
-{% block content %}
-<div class="dashboard-container">
-    <div class="welcome-section">
-        <h2>Welcome to NVD CVE Visualization</h2>
-        <p>This dashboard provides interactive visualization of Common Vulnerabilities and Exposures (CVE) data from the National Vulnerability Database (NVD).</p>
-        
-        <div class="stats-cards">
-            <div class="card">
-                <h3>Total Vulnerabilities</h3>
-                <p id="total-count">Loading...</p>
-            </div>
-            <div class="card">
-                <h3>Critical</h3>
-                <p id="critical-count">Loading...</p>
-            </div>
-            <div class="card">
-                <h3>High</h3>
-                <p id="high-count">Loading...</p>
-            </div>
-        </div>
-        
-        <a href="{{ url_for('dashboard') }}" class="btn-primary">Go to Dashboard</a>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Vulnerabilities Analysis</title>
+</head>
+<body>
+    <h1>Welcome to Vulnerabilities Analysis System</h1>
+    <div>
+        <h2>Available API Endpoints:</h2>
+        <ul>
+            <li><a href="/api/vulnerabilities">/api/vulnerabilities</a> - Get vulnerabilities list</li>
+            <li><a href="/api/stats">/api/stats</a> - Get statistics</li>
+            <li>POST /api/update - Update database</li>
+        </ul>
     </div>
-</div>
-
-<script>
-    // Загрузка статистики для главной страницы
-    fetch('/api/stats')
-        .then(response => response.json())
-        .then(data => {
-            document.getElementById('total-count').textContent = data.total_count.toLocaleString();
-            
-            const critical = data.severity_stats.find(s => s.severity === 'CRITICAL');
-            document.getElementById('critical-count').textContent = critical ? critical.count.toLocaleString() : '0';
-            
-            const high = data.severity_stats.find(s => s.severity === 'HIGH');
-            document.getElementById('high-count').textContent = high ? high.count.toLocaleString() : '0';
-        });
-</script>
-{% endblock %}
+</body>
+</html>
