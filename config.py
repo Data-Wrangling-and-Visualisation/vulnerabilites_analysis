@@ -1,18 +1,27 @@
+# config.py
 import os
 from dotenv import load_dotenv
+from urllib.parse import urlparse
 
 load_dotenv()
 
-# Для PostgreSQL
-DB_PARAMS = {
-    'host': os.getenv('DB_HOST', 'localhost'),
-    'port': os.getenv('DB_PORT', '5432'),
-    'user': os.getenv('DB_USER', 'postgres'),
-    'password': os.getenv('DB_PASSWORD', ''),
-    'database': os.getenv('DB_NAME', 'vulnerabilities_db')
-}
+# основной URL для SQLAlchemy и psycopg2
+DATABASE_URL = os.getenv('DATABASE_URL', 'sqlite:///app.db')
 
-# Для SQLAlchemy (Flask)
+# разбираем DATABASE_URL для psycopg2
+if DATABASE_URL.startswith('postgres'):
+    url = urlparse(DATABASE_URL)
+    DB_PARAMS = {
+        'host':     url.hostname,
+        'port':     url.port or 5432,
+        'user':     url.username,
+        'password': url.password,
+        'database': url.path.lstrip('/'),
+    }
+else:
+    DB_PARAMS = {}
+
 class Config:
-    SQLALCHEMY_DATABASE_URI = f"postgresql://{DB_PARAMS['user']}:{DB_PARAMS['password']}@{DB_PARAMS['host']}:{DB_PARAMS['port']}/{DB_PARAMS['database']}"
+    # для Flask‑SQLAlchemy
+    SQLALCHEMY_DATABASE_URI        = DATABASE_URL
     SQLALCHEMY_TRACK_MODIFICATIONS = False

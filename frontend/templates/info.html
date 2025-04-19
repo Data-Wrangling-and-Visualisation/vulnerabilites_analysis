@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ru" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>О Проекте — VulnAnalysis</title>
+  <!-- TailwindCSS class‑based darkMode -->
+  <script>tailwind.config = { darkMode:'class' }</script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="flex flex-col min-h-screen bg-gray-900 text-gray-100">
+
+  <!-- NAVBAR -->
+  <nav class="bg-gray-800 border-b border-gray-700">
+    <div class="flex items-center justify-between w-full px-4 py-2">
+      <a href="/" class="text-xl font-semibold text-indigo-400">VulnAnalysis</a>
+      <div class="flex items-center space-x-4">
+        <a href="/"          class="text-sm hover:text-indigo-300 transition">Главная</a>
+        <a href="/dashboard" class="text-sm hover:text-indigo-300 transition">Дашборд</a>
+        <a href="/info"      class="text-sm font-semibold text-indigo-300">О Проекте</a>
+        <a href="/team"      class="text-sm hover:text-indigo-300 transition">Команда</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- MAIN CONTENT -->
+  <main class="flex-grow">
+    <section class="max-w-4xl mx-auto px-4 py-16">
+      <h1 class="text-4xl font-bold text-indigo-400 mb-6">О Проекте</h1>
+      <p class="text-lg text-gray-300 mb-4">
+        VulnAnalysis — это обучающий веб‑сервис для сбора, хранения и визуализации уязвимостей из
+        Национальной Базы Данных Уязвимостей (NVD, США).  
+        Мы автоматизируем:
+      </p>
+      <ul class="list-disc list-inside text-gray-300 mb-4 space-y-2">
+        <li>Скачивание свежих CVE‑записей через NVD API.</li>
+        <li>Парсинг и сохранение ключевых метрик (CVSS, даты, CWE, ссылки).</li>
+        <li>Обновление базы данных по расписанию.</li>
+        <li>Интерактивные графики и дашборды для анализа трендов.</li>
+      </ul>
+      <p class="text-lg text-gray-300 mb-8">
+        Цель проекта — продемонстрировать навыки Data Wrangling, PostgreSQL, Flask и D3.js,
+        а также дать пользователям мощный инструмент для визуального анализа безопасности ПО.
+      </p>
+      <a href="/dashboard"
+         class="inline-block bg-indigo-400 text-gray-900 font-medium px-6 py-3 rounded-full shadow-lg hover:shadow-2xl transform hover:-translate-y-0.5 transition">
+        Перейти к дашборду
+      </a>
+    </section>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="bg-gray-800 border-t border-gray-700 text-center text-xs text-gray-500 py-4">
+    © 2025 Vulnerabilities Analysis System
+  </footer>
+</body>
+</html>

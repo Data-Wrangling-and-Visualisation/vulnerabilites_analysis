@@ -1,6 +1,13 @@
+#!/usr/bin/env python3
+import os
+import sys
+
+# === Добавляем корень проекта в sys.path, чтобы можно было импортировать config.py ===
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+sys.path.insert(0, PROJECT_ROOT)
+
 import psycopg2
 from config import DB_PARAMS
-from flask import current_app
 
 def get_db_connection():
     """Создает и возвращает соединение с PostgreSQL"""
@@ -21,6 +28,7 @@ def insert_new_json_to_db(vulnerabilities):
         print("Нет данных для обновления")
         return
 
+    connection = None
     try:
         connection = get_db_connection()
         cursor = connection.cursor()

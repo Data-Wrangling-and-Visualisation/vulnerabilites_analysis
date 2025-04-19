@@ -1,0 +1,15 @@
+/* Переключаем фон и цвет текста через CSS‑переменные */
+html.dark {
+    --bg-color: #1f2937;
+    --text-color: #f3f4f6;
+  }
+  html.light {
+    --bg-color: #f9fafb;
+    --text-color: #111827;
+  }
+  
+  body {
+    background-color: var(--bg-color) !important;
+    color:            var(--text-color) !important;
+  }
+  

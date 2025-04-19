@@ -1,6 +1,9 @@
 import requests
-import time
 from datetime import datetime, timedelta
+import psycopg2
+import time
+from config import DB_PARAMS
+
 from ..database.for_update_table import insert_new_json_to_db
 
 NVD_API_URL = "https://services.nvd.nist.gov/rest/json/cves/2.0"

@@ -1,69 +1,22 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard</title>
+  <!-- 1) подтягиваем D3.js из CDN -->
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    /* простенький стиль для баров и осей */
+    .bar { fill: steelblue; }
+    .axis text { font-size: 12px; font-family: sans-serif; }
+  </style>
+</head>
+<body>
+  <h1>Статистика уязвимостей по Severity</h1>
+  <!-- сюда D3 вольёт SVG -->
+  <div id="chart"></div>
 
-{% block content %}
-<div class="dashboard-container">
-    <div class="controls">
-        <div class="filter-group">
-            <label for="severity-filter">Severity:</label>
-            <select id="severity-filter">
-                <option value="all">All Severities</option>
-                <option value="CRITICAL">Critical</option>
-                <option value="HIGH">High</option>
-                <option value="MEDIUM">Medium</option>
-                <option value="LOW">Low</option>
-            </select>
-        </div>
-        
-        <div class="filter-group">
-            <label for="date-from">From:</label>
-            <input type="date" id="date-from">
-        </div>
-        
-        <div class="filter-group">
-            <label for="date-to">To:</label>
-            <input type="date" id="date-to">
-        </div>
-        
-        <button id="apply-filters" class="btn-primary">
-            <i class="fas fa-filter"></i> Apply Filters
-        </button>
-        
-        <button id="update-data" class="btn-secondary">
-            <i class="fas fa-sync-alt"></i> Update Database
-        </button>
-    </div>
-    
-    <div class="visualizations">
-        <div class="chart-container">
-            <div id="severity-distribution"></div>
-        </div>
-        <div class="chart-container">
-            <div id="cvss-scores-over-time"></div>
-        </div>
-        <div class="chart-container">
-            <div id="attack-vector-distribution"></div>
-        </div>
-        <div class="chart-container">
-            <div id="top-cwe"></div>
-        </div>
-    </div>
-    
-    <div class="data-table">
-        <h3>Recent Vulnerabilities</h3>
-        <table id="vulnerabilities-table">
-            <thead>
-                <tr>
-                    <th>CVE ID</th>
-                    <th>Published Date</th>
-                    <th>CVSS Score</th>
-                    <th>Severity</th>
-                    <th>Attack Vector</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- Data will be populated via JavaScript -->
-            </tbody>
-        </table>
-    </div>
-</div>
-{% endblock %}
+  <!-- 2) подключаем наш код -->
+  <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+</body>
+</html>
