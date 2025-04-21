@@ -1,22 +1,55 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-  <meta charset="UTF-8">
-  <title>Dashboard</title>
-  <!-- 1) подтягиваем D3.js из CDN -->
-  <script src="https://d3js.org/d3.v7.min.js"></script>
-  <style>
-    /* простенький стиль для баров и осей */
-    .bar { fill: steelblue; }
-    .axis text { font-size: 12px; font-family: sans-serif; }
-  </style>
-</head>
-<body>
-  <h1>Статистика уязвимостей по Severity</h1>
-  <!-- сюда D3 вольёт SVG -->
-  <div id="chart"></div>
+{% extends "base.html" %}
 
-  <!-- 2) подключаем наш код -->
-  <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
-</body>
-</html>
+{% block content %}
+  <div class="hero-section">
+    <h2>Анализ Уязвимостей</h2>
+    <p>Мониторинг, интерактивные графики и глубокая статистика CVE</p>
+    <button onclick="location.href='/'" class="btn">← На главную</button>
+  </div>
+
+  <main>
+    <div class="dashboard-container">
+      <div class="filters">
+        <label>Severity:
+          <select id="severity-filter">
+            <option value="all">All</option>
+            <option value="CRITICAL">Critical</option>
+            <option value="HIGH">High</option>
+            <option value="MEDIUM">Medium</option>
+            <option value="LOW">Low</option>
+          </select>
+        </label>
+        <label>From:
+          <input type="date" id="date-from">
+        </label>
+        <label>To:
+          <input type="date" id="date-to">
+        </label>
+        <button id="apply-filters" class="btn-primary">Применить</button>
+        <button id="update-data" class="btn-secondary">Обновить</button>
+      </div>
+
+      <div class="chart-grid">
+        <div class="card-dark">
+          <h4>Severity Distribution</h4>
+          <div id="severity-distribution"></div>
+        </div>
+        <div class="card-dark">
+          <h4>Vulnerabilities Over Time</h4>
+          <div id="cvss-scores-over-time"></div>
+        </div>
+        <div class="card-dark">
+          <h4>Attack Vector Distribution</h4>
+          <div id="attack-vector-distribution"></div>
+        </div>
+        <div class="card-dark">
+          <h4>Top 10 CWEs</h4>
+          <div id="top-cwe"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+{% endblock %}

@@ -1,253 +1,255 @@
-// Основной объект приложения
 const App = {
-    // Инициализация приложения
-    init: function() {
-        this.bindEvents();
-        this.fetchData();
+    data: [],
+  
+    init() {
+      this.bindEvents();
+      this.setDefaultDates();
+      this.fetchData();
     },
-    
-    // Привязка событий
-    bindEvents: function() {
-        document.getElementById('apply-filters').addEventListener('click', () => this.applyFilters());
-        document.getElementById('update-data').addEventListener('click', () => this.updateData());
+  
+    bindEvents() {
+      document.getElementById('apply-filters')
+              .addEventListener('click', () => this.applyFilters());
+      document.getElementById('update-data')
+              .addEventListener('click', () => this.updateData());
     },
-    
-    // Загрузка данных
-    fetchData: function(params = {}) {
-        const queryString = new URLSearchParams(params).toString();
-        fetch(`/api/vulnerabilities?${queryString}`)
-            .then(response => response.json())
-            .then(data => {
-                this.renderCharts(data.vulnerabilities);
-                this.renderTable(data.vulnerabilities);
-            })
-            .catch(error => console.error('Error:', error));
+  
+    setDefaultDates() {
+      const today = new Date(),
+            lastMonth = new Date();
+      lastMonth.setMonth(lastMonth.getMonth() - 1);
+  
+      document.getElementById('date-to').value   = today.toISOString().slice(0,10);
+      document.getElementById('date-from').value = lastMonth.toISOString().slice(0,10);
     },
-    
-    // Обновление данных
-    updateData: function() {
-        const button = document.getElementById('update-data');
-        button.disabled = true;
-        button.textContent = 'Updating...';
-        
-        fetch('/api/update', { method: 'POST' })
-            .then(response => response.json())
-            .then(data => {
-                alert(data.message);
-                this.fetchData();
-            })
-            .catch(error => console.error('Error:', error))
-            .finally(() => {
-                button.disabled = false;
-                button.textContent = 'Update Database';
-            });
+  
+    flatten(raw) {
+      return raw.map(v => ({
+        cve_id:        v.cve_id,
+        published_date:v.published_date.split('T')[0],
+        cvss_score:    v.cvss_v3?.base_score ?? v.cvss_v2?.base_score ?? 0,
+        severity:      v.cvss_v3?.severity     || v.cvss_v2?.severity     || 'UNKNOWN',
+        attack_vector: v.cvss_v3?.attack_vector|| v.cvss_v2?.access_vector || 'UNKNOWN',
+        cwe:           v.cwe
+      }));
     },
-    
-    // Применение фильтров
-    applyFilters: function() {
-        const severity = document.getElementById('severity-filter').value;
-        const dateFrom = document.getElementById('date-from').value;
-        const dateTo = document.getElementById('date-to').value;
-        
-        const params = {};
-        if (severity !== 'all') params.severity = severity;
-        if (dateFrom) params.date_from = dateFrom;
-        if (dateTo) params.date_to = dateTo;
-        
-        this.fetchData(params);
-    },
-    
-    // Отрисовка графиков
-    renderCharts: function(data) {
-        this.renderSeverityDistribution(data);
-        this.renderCVSSOverTime(data);
-        this.renderAttackVectorDistribution(data);
-        this.renderTopCWE(data);
-    },
-    
-    // График распределения по severity
-    renderSeverityDistribution: function(data) {
-        const severityCounts = {
-            CRITICAL: 0,
-            HIGH: 0,
-            MEDIUM: 0,
-            LOW: 0
-        };
-        
-        data.forEach(vuln => {
-            const severity = vuln.cvss_v3?.severity || vuln.cvss_v2?.severity || 'UNKNOWN';
-            if (severityCounts[severity] !== undefined) {
-                severityCounts[severity]++;
-            }
+  
+    fetchData(params = {}) {
+      const qs = new URLSearchParams(params).toString();
+      fetch(`/api/vulnerabilities?${qs}`)
+        .then(res => res.json())
+        .then(json => {
+          this.data = this.flatten(json.vulnerabilities || []);
+          this.renderCharts();
+          this.renderTable();
         });
-        
-        const trace = {
-            values: Object.values(severityCounts),
-            labels: Object.keys(severityCounts),
-            type: 'pie',
-            marker: {
-                colors: ['#e74c3c', '#e67e22', '#f1c40f', '#2ecc71']
-            }
-        };
-        
-        const layout = {
-            title: 'Vulnerability Severity Distribution',
-            height: 400,
-            width: 500
-        };
-        
-        Plotly.newPlot('severity-distribution', [trace], layout);
     },
-    
-    // График CVSS scores over time
-    renderCVSSOverTime: function(data) {
-        const monthlyData = {};
-        
-        data.forEach(vuln => {
-            if (!vuln.published_date) return;
-            
-            const date = new Date(vuln.published_date);
-            const monthYear = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}`;
-            
-            if (!monthlyData[monthYear]) {
-                monthlyData[monthYear] = {
-                    v2_scores: [],
-                    v3_scores: []
-                };
-            }
-            
-            if (vuln.cvss_v2?.base_score) {
-                monthlyData[monthYear].v2_scores.push(vuln.cvss_v2.base_score);
-            }
-            
-            if (vuln.cvss_v3?.base_score) {
-                monthlyData[monthYear].v3_scores.push(vuln.cvss_v3.base_score);
-            }
-        });
-        
-        const months = Object.keys(monthlyData).sort();
-        const avgV2 = months.map(m => {
-            const scores = monthlyData[m].v2_scores;
-            return scores.length ? (scores.reduce((a, b) => a + b, 0) / scores.length : null;
-        });
-        
-        const avgV3 = months.map(m => {
-            const scores = monthlyData[m].v3_scores;
-            return scores.length ? (scores.reduce((a, b) => a + b, 0) / scores.length : null;
-        });
-        
-        const trace1 = {
-            x: months,
-            y: avgV2,
-            name: 'CVSS v2',
-            type: 'line',
-            line: { color: '#3498db' }
-        };
-        
-        const trace2 = {
-            x: months,
-            y: avgV3,
-            name: 'CVSS v3',
-            type: 'line',
-            line: { color: '#9b59b6' }
-        };
-        
-        const layout = {
-            title: 'Average CVSS Scores Over Time',
-            xaxis: { title: 'Month' },
-            yaxis: { title: 'Average Score' },
-            height: 400
-        };
-        
-        Plotly.newPlot('cvss-scores-over-time', [trace1, trace2], layout);
+  
+    applyFilters() {
+      const sev  = document.getElementById('severity-filter').value;
+      const from = document.getElementById('date-from').value;
+      const to   = document.getElementById('date-to').value;
+      const p = {};
+      if (sev !== 'all') p.severity = sev;
+      if (from) p.date_from = from;
+      if (to)   p.date_to   = to;
+      this.fetchData(p);
     },
-    
-    // График распределения attack vectors
-    renderAttackVectorDistribution: function(data) {
-        const vectorCounts = {};
-        
-        data.forEach(vuln => {
-            const vector = vuln.cvss_v3?.attack_vector || 'UNKNOWN';
-            vectorCounts[vector] = (vectorCounts[vector] || 0) + 1;
+  
+    updateData() {
+      const btn = document.getElementById('update-data');
+      btn.disabled = true; btn.textContent = 'Обновляю…';
+      fetch('/api/update', { method: 'POST' })
+        .then(r => r.json())
+        .then(()=> this.fetchData())
+        .finally(()=>{
+          btn.disabled = false;
+          btn.textContent = 'Обновить';
         });
-        
-        const trace = {
-            x: Object.keys(vectorCounts),
-            y: Object.values(vectorCounts),
-            type: 'bar',
-            marker: {
-                color: Object.keys(vectorCounts).map(
-                    (_, i) => ['#3498db', '#2ecc71', '#e74c3c', '#f1c40f'][i % 4]
-                )
-            }
-        };
-        
-        const layout = {
-            title: 'Attack Vector Distribution (CVSS v3)',
-            xaxis: { title: 'Attack Vector' },
-            yaxis: { title: 'Count' },
-            height: 400
-        };
-        
-        Plotly.newPlot('attack-vector-distribution', [trace], layout);
     },
-    
-    // График топ CWE
-    renderTopCWE: function(data) {
-        const cweCounts = {};
-        
-        data.forEach(vuln => {
-            if (!vuln.cwe) return;
-            
-            const cwes = vuln.cwe.split(', ').filter(cwe => cwe.startsWith('CWE-'));
-            cwes.forEach(cwe => {
-                cweCounts[cwe] = (cweCounts[cwe] || 0) + 1;
-            });
-        });
-        
-        const sortedCWE = Object.entries(cweCounts)
-            .sort((a, b) => b[1] - a[1])
-            .slice(0, 10);
-        
-        const trace = {
-            x: sortedCWE.map(item => item[0]),
-            y: sortedCWE.map(item => item[1]),
-            type: 'bar',
-            marker: { color: '#3498db' }
-        };
-        
-        const layout = {
-            title: 'Top 10 CWE Types',
-            xaxis: { title: 'CWE ID' },
-            yaxis: { title: 'Count' },
-            height: 400
-        };
-        
-        Plotly.newPlot('top-cwe', [trace], layout);
+  
+    renderCharts() {
+      this.renderSeverityChart();
+      this.renderCVSSTimeSeries();
+      this.renderAttackVectorChart();
+      this.renderTopCWEChart();
     },
-    
-    // Отрисовка таблицы
-    renderTable: function(data) {
-        const tableBody = document.querySelector('#vulnerabilities-table tbody');
-        tableBody.innerHTML = '';
-        
-        data.slice(0, 50).forEach(vuln => {
-            const row = document.createElement('tr');
-            
-            row.innerHTML = `
-                <td><a href="https://nvd.nist.gov/vuln/detail/${vuln.cve_id}" target="_blank">${vuln.cve_id}</a></td>
-                <td>${new Date(vuln.published_date).toLocaleDateString()}</td>
-                <td>${vuln.cvss_v3?.base_score || vuln.cvss_v2?.base_score || 'N/A'}</td>
-                <td class="severity-${vuln.cvss_v3?.severity || vuln.cvss_v2?.severity || ''}">
-                    ${vuln.cvss_v3?.severity || vuln.cvss_v2?.severity || 'N/A'}
-                </td>
-                <td>${vuln.cvss_v3?.attack_vector || vuln.cvss_v2?.access_vector || 'N/A'}</td>
-            `;
-            
-            tableBody.appendChild(row);
-        });
+  
+    renderSeverityChart() {
+      const data = this.data;
+      const counts = d3.rollup(data, v=>v.length, d=>d.severity);
+      const arr = Array.from(counts, ([k,v])=>({k,v}));
+  
+      const container = d3.select('#severity-distribution').node().parentNode;
+      const { width, height } = container.getBoundingClientRect();
+      const margin = 20;
+      const R = Math.min(width, height)/2 - margin;
+  
+      const color = d3.scaleOrdinal(d3.schemeSet2);
+      const pie   = d3.pie().value(d=>d.v);
+      const arc   = d3.arc().innerRadius(R*0.3).outerRadius(R);
+  
+      const svg = d3.select('#severity-distribution').html('')
+        .append('svg')
+          .attr('width',  width)
+          .attr('height', height)
+        .append('g')
+          .attr('transform', `translate(${width/2},${height/2})`);
+  
+      svg.selectAll('path')
+        .data(pie(arr))
+        .join('path')
+          .attr('d', arc)
+          .attr('fill', d=>color(d.data.k))
+        .append('title')
+          .text(d=>`${d.data.k}: ${d.data.v}`);
+  
+      svg.selectAll('text.slice-label')
+        .data(pie(arr))
+        .join('text')
+          .attr('class','slice-label')
+          .attr('transform', d=>`translate(${arc.centroid(d)})`)
+          .attr('dy','0.35em')
+          .attr('text-anchor','middle')
+          .style('fill','var(--text-light)')
+          .style('font-size','12px')
+          .text(d=>d.data.k);
+    },
+  
+    renderCVSSTimeSeries() {
+      const data = this.data;
+      const parse = d3.timeParse('%Y-%m-%d');
+      let series = data.map(d=>({
+        date:  parse(d.published_date),
+        score: d.cvss_score
+      })).filter(d=>d.date && !isNaN(d.score));
+      series.sort((a,b)=>a.date-b.date);
+  
+      const container = d3.select('#cvss-scores-over-time').node().parentNode;
+      const { width, height } = container.getBoundingClientRect();
+      const margin = {top:20, right:20, bottom:60, left:50};
+      const W = width - margin.left - margin.right;
+      const H = height - margin.top - margin.bottom;
+  
+      const svg = d3.select('#cvss-scores-over-time').html('')
+        .append('svg')
+          .attr('width',  width)
+          .attr('height', height)
+        .append('g')
+          .attr('transform', `translate(${margin.left},${margin.top})`);
+  
+      const x = d3.scaleTime()
+        .domain(d3.extent(series, d=>d.date)).range([0,W]);
+      const y = d3.scaleLinear().domain([0,10]).range([H,0]);
+  
+      svg.append('g')
+        .attr('transform',`translate(0,${H})`)
+        .call(d3.axisBottom(x).ticks(6).tickFormat(d3.timeFormat('%d %b')))
+        .selectAll('text').attr('transform','rotate(-45)').style('text-anchor','end');
+      svg.append('g').call(d3.axisLeft(y));
+  
+      const line = d3.line().x(d=>x(d.date)).y(d=>y(d.score));
+      svg.append('path')
+        .datum(series)
+        .attr('fill','none')
+        .attr('stroke','var(--accent-from)')
+        .attr('stroke-width',2)
+        .attr('d',line);
+  
+      svg.append('g').selectAll('circle')
+        .data(series).join('circle')
+          .attr('cx',d=>x(d.date))
+          .attr('cy',d=>y(d.score))
+          .attr('r',3)
+          .attr('fill','var(--accent-to)')
+        .append('title')
+          .text(d=>`${d3.timeFormat('%Y-%m-%d')(d.date)} — ${d.score}`);
+    },
+  
+    renderAttackVectorChart() {
+      const data = this.data;
+      const counts = d3.rollup(data, v=>v.length, d=>d.attack_vector);
+      const arr = Array.from(counts, ([k,v])=>({k,v})).sort((a,b)=>b.v-a.v);
+  
+      const container = d3.select('#attack-vector-distribution').node().parentNode;
+      const { width, height } = container.getBoundingClientRect();
+      const margin = {top:20, right:20, bottom:20, left:100};
+      const W = width - margin.left - margin.right;
+      const H = height - margin.top - margin.bottom;
+  
+      const svg = d3.select('#attack-vector-distribution').html('')
+        .append('svg')
+          .attr('width',  width)
+          .attr('height', height)
+        .append('g')
+          .attr('transform',`translate(${margin.left},${margin.top})`);
+  
+      const x = d3.scaleLinear().domain([0, d3.max(arr,d=>d.v)]).range([0,W]);
+      const y = d3.scaleBand(arr.map(d=>d.k), [0,H]).padding(0.2);
+  
+      svg.selectAll('rect')
+        .data(arr).join('rect')
+          .attr('y',d=>y(d.k))
+          .attr('width',d=>x(d.v))
+          .attr('height',y.bandwidth())
+          .attr('fill','var(--accent-from)');
+  
+      svg.append('g').call(d3.axisLeft(y)).selectAll('text')
+        .style('fill','var(--text-light)');
+    },
+  
+    renderTopCWEChart() {
+      const data = this.data;
+      const counts = d3.rollup(data, v=>v.length, d=>d.cwe);
+      const arr = Array.from(counts, ([k,v])=>({k,v}))
+        .sort((a,b)=>b.v-a.v).slice(0,10);
+  
+      const container = d3.select('#top-cwe').node().parentNode;
+      const { width, height } = container.getBoundingClientRect();
+      const margin = {top:20, right:20, bottom:60, left:60};
+      const W = width - margin.left - margin.right;
+      const H = height - margin.top - margin.bottom;
+  
+      const svg = d3.select('#top-cwe').html('')
+        .append('svg')
+          .attr('width',  width)
+          .attr('height', height)
+        .append('g')
+          .attr('transform',`translate(${margin.left},${margin.top})`);
+  
+      const x = d3.scaleBand(arr.map(d=>d.k), [0,W]).padding(0.2);
+      const y = d3.scaleLinear().domain([0, d3.max(arr,d=>d.v)]).range([H,0]);
+  
+      svg.append('g').call(d3.axisLeft(y));
+      svg.append('g').attr('transform',`translate(0,${H})`)
+        .call(d3.axisBottom(x))
+        .selectAll('text').attr('transform','rotate(-45)').style('text-anchor','end').style('fill','var(--text-light)');
+  
+      svg.selectAll('rect')
+        .data(arr).join('rect')
+          .attr('x',d=>x(d.k))
+          .attr('y',d=>y(d.v))
+          .attr('width',x.bandwidth())
+          .attr('height',d=>H-y(d.v))
+          .attr('fill','var(--accent-to)');
+    },
+  
+    renderTable() {
+      const tbody = document.querySelector('#vulnerabilities-table tbody');
+      tbody.innerHTML = '';
+      this.data.slice(0,20).forEach(v=>{
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${v.cve_id}</td>
+          <td>${v.published_date}</td>
+          <td>${v.cvss_score.toFixed(1)}</td>
+          <td>${v.severity}</td>
+          <td>${v.attack_vector}</td>
+        `;
+        tbody.appendChild(row);
+      });
     }
-};
-
-// Инициализация приложения после загрузки DOM
-document.addEventListener('DOMContentLoaded', () => App.init());
+  };
+  
+  document.addEventListener('DOMContentLoaded', () => App.init());
+  
