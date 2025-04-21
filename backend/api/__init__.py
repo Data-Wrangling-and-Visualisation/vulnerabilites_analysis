@@ -1,3 +1,7 @@
-from flask_sqlalchemy import SQLAlchemy
+from flask import Blueprint
 
-db = SQLAlchemy()
+# Создаем blueprint
+api_blueprint = Blueprint('api', __name__)
+
+# Импортируем маршруты ПОСЛЕ создания blueprint
+from . import routes

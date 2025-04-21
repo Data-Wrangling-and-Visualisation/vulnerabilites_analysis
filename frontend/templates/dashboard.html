@@ -1,69 +1,55 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="dashboard-container">
-    <div class="controls">
-        <div class="filter-group">
-            <label for="severity-filter">Severity:</label>
-            <select id="severity-filter">
-                <option value="all">All Severities</option>
-                <option value="CRITICAL">Critical</option>
-                <option value="HIGH">High</option>
-                <option value="MEDIUM">Medium</option>
-                <option value="LOW">Low</option>
-            </select>
+  <div class="hero-section">
+    <h2>Анализ Уязвимостей</h2>
+    <p>Мониторинг, интерактивные графики и глубокая статистика CVE</p>
+    <button onclick="location.href='/'" class="btn">← На главную</button>
+  </div>
+
+  <main>
+    <div class="dashboard-container">
+      <div class="filters">
+        <label>Severity:
+          <select id="severity-filter">
+            <option value="all">All</option>
+            <option value="CRITICAL">Critical</option>
+            <option value="HIGH">High</option>
+            <option value="MEDIUM">Medium</option>
+            <option value="LOW">Low</option>
+          </select>
+        </label>
+        <label>From:
+          <input type="date" id="date-from">
+        </label>
+        <label>To:
+          <input type="date" id="date-to">
+        </label>
+        <button id="apply-filters" class="btn-primary">Применить</button>
+        <button id="update-data" class="btn-secondary">Обновить</button>
+      </div>
+
+      <div class="chart-grid">
+        <div class="card-dark">
+          <h4>Severity Distribution</h4>
+          <div id="severity-distribution"></div>
         </div>
-        
-        <div class="filter-group">
-            <label for="date-from">From:</label>
-            <input type="date" id="date-from">
+        <div class="card-dark">
+          <h4>Vulnerabilities Over Time</h4>
+          <div id="cvss-scores-over-time"></div>
         </div>
-        
-        <div class="filter-group">
-            <label for="date-to">To:</label>
-            <input type="date" id="date-to">
+        <div class="card-dark">
+          <h4>Attack Vector Distribution</h4>
+          <div id="attack-vector-distribution"></div>
         </div>
-        
-        <button id="apply-filters" class="btn-primary">
-            <i class="fas fa-filter"></i> Apply Filters
-        </button>
-        
-        <button id="update-data" class="btn-secondary">
-            <i class="fas fa-sync-alt"></i> Update Database
-        </button>
+        <div class="card-dark">
+          <h4>Top 10 CWEs</h4>
+          <div id="top-cwe"></div>
+        </div>
+      </div>
     </div>
-    
-    <div class="visualizations">
-        <div class="chart-container">
-            <div id="severity-distribution"></div>
-        </div>
-        <div class="chart-container">
-            <div id="cvss-scores-over-time"></div>
-        </div>
-        <div class="chart-container">
-            <div id="attack-vector-distribution"></div>
-        </div>
-        <div class="chart-container">
-            <div id="top-cwe"></div>
-        </div>
-    </div>
-    
-    <div class="data-table">
-        <h3>Recent Vulnerabilities</h3>
-        <table id="vulnerabilities-table">
-            <thead>
-                <tr>
-                    <th>CVE ID</th>
-                    <th>Published Date</th>
-                    <th>CVSS Score</th>
-                    <th>Severity</th>
-                    <th>Attack Vector</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- Data will be populated via JavaScript -->
-            </tbody>
-        </table>
-    </div>
-</div>
+  </main>
+
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 {% endblock %}

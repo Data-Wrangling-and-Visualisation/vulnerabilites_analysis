@@ -1,3 +1,11 @@
+#!/usr/bin/env python3
+import os
+import sys
+
+# === Добавляем корень проекта в sys.path, чтобы можно было импортировать config.py ===
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+sys.path.insert(0, PROJECT_ROOT)
+
 import psycopg2
 from config import DB_PARAMS
 

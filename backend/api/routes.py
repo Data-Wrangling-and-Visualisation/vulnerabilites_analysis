@@ -1,5 +1,8 @@
 from flask import jsonify, request
 from .data_fetcher import NVDDataFetcher
+import psycopg2
+from config import DB_PARAMS
+
 from backend.models.vulnerabilities import Vulnerability
 from backend.api import api_blueprint
 
@@ -74,3 +77,35 @@ def get_stats():
         })
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+    
+from flask import jsonify
+from backend.models.vulnerabilities import Vulnerability
+from . import api_blueprint
+from .. import db
+from sqlalchemy import func
+
+@api_blueprint.route('/trend')
+def trend_data():
+    # Группируем по дате публикации
+    rows = (
+        db.session.query(
+            func.date(Vulnerability.published_date).label('date'),
+            func.count().label('count')
+        )
+        .group_by(func.date(Vulnerability.published_date))
+        .order_by(func.date(Vulnerability.published_date))
+        .all()
+    )
+    return jsonify([{'date': str(r.date), 'count': r.count} for r in rows])
+
+@api_blueprint.route('/cwe')
+def cwe_data():
+    # Простая агрегация по CWE (строка cwe_str — через запятую)
+    counts = {}
+    for (cwe_str,) in db.session.query(Vulnerability.cwe_str).all():
+        for c in (cwe_str or "").split(', '):
+            if c:
+                counts[c] = counts.get(c, 0) + 1
+    # Топ‑10
+    top10 = sorted(counts.items(), key=lambda x: -x[1])[:10]
+    return jsonify([{'cwe': c, 'count': n} for c, n in top10])

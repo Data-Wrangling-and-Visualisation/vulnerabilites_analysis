@@ -1,42 +1,143 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="ru" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>VulnAnalysis</title>
+  <!-- Tailwind in class‑based dark mode -->
+  <script>
+    tailwind.config = { darkMode: 'class' }
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="flex flex-col min-h-screen bg-gray-900 text-gray-100">
 
-{% block content %}
-<div class="dashboard-container">
-    <div class="welcome-section">
-        <h2>Welcome to NVD CVE Visualization</h2>
-        <p>This dashboard provides interactive visualization of Common Vulnerabilities and Exposures (CVE) data from the National Vulnerability Database (NVD).</p>
-        
-        <div class="stats-cards">
-            <div class="card">
-                <h3>Total Vulnerabilities</h3>
-                <p id="total-count">Loading...</p>
-            </div>
-            <div class="card">
-                <h3>Critical</h3>
-                <p id="critical-count">Loading...</p>
-            </div>
-            <div class="card">
-                <h3>High</h3>
-                <p id="high-count">Loading...</p>
-            </div>
-        </div>
-        
-        <a href="{{ url_for('dashboard') }}" class="btn-primary">Go to Dashboard</a>
+  <!-- NAVBAR -->
+  <nav class="bg-gray-800 border-b border-gray-700">
+    <div class="flex items-center justify-between w-full px-4 py-2">
+      <a href="/" class="text-xl font-semibold text-indigo-400">VulnAnalysis</a>
+      <div class="flex items-center space-x-4">
+        <a href="/dashboard" class="text-sm hover:text-indigo-300 transition">Дашборд</a>
+        <a href="/api/vulnerabilities" class="text-sm hover:text-indigo-300 transition">Список CVE</a>
+      </div>
     </div>
-</div>
+  </nav>
 
-<script>
-    // Загрузка статистики для главной страницы
-    fetch('/api/stats')
-        .then(response => response.json())
-        .then(data => {
-            document.getElementById('total-count').textContent = data.total_count.toLocaleString();
-            
-            const critical = data.severity_stats.find(s => s.severity === 'CRITICAL');
-            document.getElementById('critical-count').textContent = critical ? critical.count.toLocaleString() : '0';
-            
-            const high = data.severity_stats.find(s => s.severity === 'HIGH');
-            document.getElementById('high-count').textContent = high ? high.count.toLocaleString() : '0';
-        });
-</script>
-{% endblock %}
+  <!-- MAIN CONTENT -->
+  <main class="flex-grow">
+
+    <!-- HERO -->
+    <header class="pt-16 pb-12 bg-gradient-to-r from-indigo-700 to-blue-600 text-center">
+      <div class="max-w-3xl mx-auto px-4">
+        <h1 class="text-4xl md:text-6xl font-bold mb-2">Анализ Уязвимостей</h1>
+        <p class="text-lg md:text-xl mb-6 opacity-90">Мониторинг, интерактивные графики и глубокая статистика CVE</p>
+        <a href="/dashboard"
+           class="inline-block bg-indigo-400 text-gray-900 font-medium px-6 py-2 rounded-full shadow hover:shadow-lg transform hover:-translate-y-0.5 transition">
+          Перейти к дашборду
+        </a>
+      </div>
+    </header>
+
+    <!-- VISUALIZATION BUTTONS -->
+    <section class="max-w-6xl mx-auto px-4 py-8">
+      <h2 class="text-2xl font-bold text-gray-100 mb-6">Визуализации</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+        <!-- пример кнопки -->
+        <a href="/dashboard"
+           class="block bg-gray-800 rounded-lg shadow-lg p-6 text-center transform transition duration-200 ease-in-out hover:scale-105 hover:shadow-2xl cursor-pointer">
+          <svg class="mx-auto w-8 h-8 text-indigo-400 mb-2" fill="none" stroke="currentColor" stroke-width="2"
+               viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round"
+               d="M3 3v18h18"/></svg>
+          <span class="block font-medium text-gray-100">Severity Breakdown</span>
+        </a>
+        <a href="/trend"
+           class="block bg-gray-800 rounded-lg shadow-lg p-6 text-center transform transition duration-200 ease-in-out hover:scale-105 hover:shadow-2xl cursor-pointer">
+          <svg class="mx-auto w-8 h-8 text-green-400 mb-2" fill="none" stroke="currentColor" stroke-width="2"
+               viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round"
+               d="M3 17l6-6 4 4 8-8"/></svg>
+          <span class="block font-medium text-gray-100">Trend Over Time</span>
+        </a>
+        <a href="/cwe"
+           class="block bg-gray-800 rounded-lg shadow-lg p-6 text-center transform transition duration-200 ease-in-out hover:scale-105 hover:shadow-2xl cursor-pointer">
+          <svg class="mx-auto w-8 h-8 text-yellow-400 mb-2" fill="none" stroke="currentColor" stroke-width="2"
+               viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round"
+               d="M9 12h6M12 9v6"/></svg>
+          <span class="block font-medium text-gray-100">Top CWE</span>
+        </a>
+        <a href="/vendors"
+           class="block bg-gray-800 rounded-lg shadow-lg p-6 text-center transform transition duration-200 ease-in-out hover:scale-105 hover:shadow-2xl cursor-pointer">
+          <svg class="mx-auto w-8 h-8 text-red-400 mb-2" fill="none" stroke="currentColor" stroke-width="2"
+               viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round"
+               d="M3 21h18V3H3v18z"/></svg>
+          <span class="block font-medium text-gray-100">Vendor Distribution</span>
+        </a>
+      </div>
+    </section>
+
+    <!-- METRICS CARDS -->
+    <section class="max-w-6xl mx-auto px-4 py-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div class="bg-gray-800 rounded-lg shadow p-4 flex items-center space-x-3">
+        <svg class="w-8 h-8 text-indigo-400" fill="none" stroke="currentColor" stroke-width="2"
+             viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round"
+             d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+        <div><p class="text-xs text-gray-400">Всего CVE</p><p id="total-cve" class="text-xl font-semibold">—</p></div>
+      </div>
+      <div class="bg-gray-800 rounded-lg shadow p-4 flex items-center space-x-3">
+        <svg class="w-8 h-8 text-green-400" fill="none" stroke="currentColor" stroke-width="2"
+             viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round"
+             d="M3 17l6-6 4 4 8-8"/></svg>
+        <div><p class="text-xs text-gray-400">Новые за неделю</p><p id="weekly-cve" class="text-xl font-semibold">—</p></div>
+      </div>
+      <div class="bg-gray-800 rounded-lg shadow p-4 flex items-center space-x-3">
+        <svg class="w-8 h-8 text-red-400" fill="none" stroke="currentColor" stroke-width="2"
+             viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round"
+             d="M12 6v6l4 2"/></svg>
+        <div><p class="text-xs text-gray-400">High + Critical</p><p id="high-critical" class="text-xl font-semibold">—</p></div>
+      </div>
+      <div class="bg-gray-800 rounded-lg shadow p-4 flex items-center space-x-3">
+        <svg class="w-8 h-8 text-yellow-400" fill="none" stroke="currentColor" stroke-width="2"
+             viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round"
+             d="M12 8v4l3 3"/></svg>
+        <div><p class="text-xs text-gray-400">Последнее обновление</p><p id="last-update" class="text-sm">—</p></div>
+      </div>
+    </section>
+
+    <!-- NEW: INFO & TEAM BUTTONS -->
+    <section class="max-w-4xl mx-auto px-4 py-12 grid grid-cols-1 sm:grid-cols-2 gap-6">
+      <a href="/info"
+         class="block bg-gray-800 rounded-lg shadow-lg p-6 text-center transform transition duration-200 ease-in-out hover:scale-105 hover:shadow-2xl cursor-pointer">
+        <h3 class="text-xl font-semibold text-gray-100 mb-2">О Проекте</h3>
+        <p class="text-gray-400">Узнать цель, задачи и возможности сервиса</p>
+      </a>
+      <a href="/team"
+         class="block bg-gray-800 rounded-lg shadow-lg p-6 text-center transform transition duration-200 ease-in-out hover:scale-105 hover:shadow-2xl cursor-pointer">
+        <h3 class="text-xl font-semibold text-gray-100 mb-2">Наша Команда</h3>
+        <p class="text-gray-400">Познакомиться с разработчиками и их ролями</p>
+      </a>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="bg-gray-800 border-t border-gray-700 text-center text-xs text-gray-500 py-3">
+    © 2025 Vulnerabilities Analysis System
+  </footer>
+
+  <!-- Inline JS: загрузка метрик -->
+  <script>
+    (async()=> {
+      try {
+        const stats = await fetch('/api/stats').then(r=>r.json());
+        document.getElementById('total-cve').textContent = stats.total_count;
+        document.getElementById('weekly-cve').textContent = stats.weekly_count || 0;
+        document.getElementById('high-critical').textContent =
+          (stats.severity_stats||[])
+            .filter(d=>['HIGH','CRITICAL'].includes(d.severity))
+            .reduce((s,d)=>s+d.count,0);
+        document.getElementById('last-update').textContent =
+          new Date(stats.last_update).toLocaleDateString('ru-RU');
+      } catch(e) { console.error(e) }
+    })();
+  </script>
+</body>
+</html>

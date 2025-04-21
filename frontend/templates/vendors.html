@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block content %}
+  <div class="hero-section">
+    <h2>Vendor Analysis</h2>
+    <p>Список CVE для выбранного поставщика и распределение по severity / динамика по датам</p>
+    <button onclick="location.href='/'" class="btn">← На главную</button>
+  </div>
+
+  <main class="dashboard-container">
+    <div class="filters card-dark">
+      <label for="vendor-filter">Vendor:</label>
+      <input type="text" id="vendor-filter" placeholder="Например, Microsoft">
+
+      <label for="vendor-start">From:</label>
+      <input type="date" id="vendor-start">
+
+      <label for="vendor-end">To:</label>
+      <input type="date" id="vendor-end">
+
+      <label for="vendor-severity">Severity:</label>
+      <select id="vendor-severity">
+        <option value="all">All</option>
+        <option value="CRITICAL">Critical</option>
+        <option value="HIGH">High</option>
+        <option value="MEDIUM">Medium</option>
+        <option value="LOW">Low</option>
+      </select>
+
+      <button id="apply-vendor" class="btn-primary">Применить</button>
+    </div>
+
+    <div class="chart-grid vendor-chart-grid">
+      <div class="card-dark" id="vendor-severity-chart">
+        <h4>Severity Distribution</h4>
+        <div></div>
+      </div>
+      <div class="card-dark" id="vendor-trend-chart">
+        <h4>Vulnerabilities Over Time</h4>
+        <div></div>
+      </div>
+    </div>
+
+    <div class="card-dark" style="margin-top:1.5rem; padding:1rem;">
+      <h4>List of CVEs for <span id="vendor-title"></span></h4>
+      <table id="vendor-table">
+        <thead>
+          <tr>
+            <th>CVE ID</th>
+            <th>Published</th>
+            <th>CVSS</th>
+            <th>Severity</th>
+            <th>Attack Vector</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </main>
+
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="{{ url_for('static', filename='js/vendors.js') }}"></script>
+{% endblock %}

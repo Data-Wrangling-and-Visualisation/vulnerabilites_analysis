@@ -1,3 +1,11 @@
+#!/usr/bin/env python3
+import os
+import sys
+
+# === Добавляем корень проекта в sys.path, чтобы можно было импортировать config.py ===
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+sys.path.insert(0, PROJECT_ROOT)
+
 import json
 import psycopg2
 from config import DB_PARAMS
@@ -45,7 +53,11 @@ def insert_json_to_db(vulnerabilities):
                     )
 
                     cur.execute("""
-                        INSERT INTO vulnerabilities VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                        INSERT INTO vulnerabilities VALUES (
+                            %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
+                            %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
+                            %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+                        )
                     """, values)
                 conn.commit()
         print(f"Успешно добавлено {len(vulnerabilities)} записей")
@@ -57,7 +69,7 @@ if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("Использование: python first_fill_table.py <путь_к_json_файлу>")
         sys.exit(1)
-    
+
     json_file = sys.argv[1]
     try:
         with open(json_file, "r", encoding="utf-8") as file:

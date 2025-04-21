@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <div class="hero-section">
+    <h2>Trend Over Time</h2>
+    <p>Динамика количества новых CVE по дням с возможностью фильтрации</p>
+    <button onclick="location.href='/'" class="btn">← На главную</button>
+  </div>
+
+  <main class="dashboard-container">
+    <div class="filters card-dark">
+      <label for="trend-start">From:</label>
+      <input type="date" id="trend-start">
+
+      <label for="trend-end">To:</label>
+      <input type="date" id="trend-end">
+
+      <label for="trend-severity">Severity:</label>
+      <select id="trend-severity">
+        <option value="all">All</option>
+        <option value="CRITICAL">Critical</option>
+        <option value="HIGH">High</option>
+        <option value="MEDIUM">Medium</option>
+        <option value="LOW">Low</option>
+      </select>
+
+      <label for="trend-attack">Attack Vector:</label>
+      <select id="trend-attack">
+        <option value="all">All</option>
+        <option value="NETWORK">Network</option>
+        <option value="LOCAL">Local</option>
+        <option value="PHYSICAL">Physical</option>
+        <option value="UNKNOWN">Unknown</option>
+      </select>
+
+      <button id="apply-trend" class="btn-primary">Применить</button>
+    </div>
+
+    <div class="chart-grid">
+      <div class="card-dark" id="trend-chart">
+        <h4>New CVEs Per Day</h4>
+        <div></div>
+      </div>
+    </div>
+  </main>
+
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="{{ url_for('static', filename='js/trend.js') }}"></script>
+{% endblock %}
